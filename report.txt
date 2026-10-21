@@ -1,0 +1,55 @@
+HW3 - Scheduler Simulator
+
+Run: python3 simulator.py --workload sample.csv --compare
+     python3 simulator.py --workload sample.csv --algo fcfs   (or sjf, rr, priority, mlfq)
+
+
+Design decisions
+
+Round Robin: quantum 4.
+
+Priority:
+  - lower number = higher priority
+  - non-preemptive
+  - aging: effective priority = priority - (time waited // 5)
+  - ties go to the earlier arrival, then file order
+
+MLFQ:
+  - 3 queues: Q0 quantum 4, Q1 quantum 8, Q2 quantum 16
+  - new processes start in Q0, and each queue is round robin
+  - using the full quantum without finishing drops it a level (Q2 stays in Q2)
+  - giving up the CPU early for I/O keeps it at the same level (optional
+    5th "io" column, not used in my workloads)
+  - a new arrival preempts anything running from Q1 or Q2
+  - every 50 time units everything is boosted back to Q0
+
+
+Lecture workload (sample.csv)
+
+Algorithm    Avg Waiting  Avg Turnaround  Avg Response
+FCFS         7.50         12.25           7.50
+SJF          4.50         9.25            4.50
+Round Robin  8.50         13.25           5.00
+Priority     9.00         13.75           9.00
+MLFQ         8.50         13.25           5.00
+
+FCFS and SJF match the Lecture 5 numbers worked out by hand.
+
+
+My workload (eli_workload.csv)
+
+pid,arrival,burst,priority
+P1,0,30,4
+P2,2,5,2
+P3,4,3,1
+P4,5,8,3
+P5,10,2,1
+P6,12,12,5
+P7,65,4,2
+
+Algorithm    Avg Waiting  Avg Turnaround  Avg Response
+FCFS         23.43        32.57           23.43
+SJF          21.71        30.86           21.71
+Round Robin  14.29        23.43           5.14
+Priority     22.29        31.43           22.29
+MLFQ         14.43        23.57           3.14
