@@ -1,0 +1,30 @@
+HW4 - Producer-Consumer
+
+Run: python3 pc_threads.py
+     python3 pc_processes.py
+     options: --producers 3 --consumers 3 --items 10 --capacity 5 --work io|cpu --quiet
+
+
+What changed between each version
+
+  - queue.Queue -> multiprocessing.Queue, items get pickled and sent through a pipe
+    instead of just being shared in memory
+  - threads -> processes, threading.Lock -> multiprocessing.Lock for printing
+  - processes don't share memory, so consumers send their results back to main
+    through a second queue instead of just appending to a list main can see
+  - shutdown is the same in both: one None per consumer, then join everything
+
+
+Timing
+3 producers, 3 consumers, 20 items each, capacity 5, avg of 3 runs
+
+Workload     threading   multiprocessing
+I/O (sleep)  0.41 s      0.64 s
+CPU (math)   2.38 s      1.10 s
+
+I/O: threading is fine here since the GIL gets released while sleeping.
+Multiprocessing is a bit slower because starting processes and pickling costs extra.
+
+CPU: this is what the GIL cost. 60 items at ~0.04s each is ~2.4s, and threading
+took 2.38s, so 3 consumer threads gave basically no speedup since only one can
+run at a time. Multiprocessing was ~2.2x faster because each process has its own GIL.
